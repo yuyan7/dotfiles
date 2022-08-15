@@ -1,0 +1,28 @@
+[user]
+	name = Yuya Nakamura
+	email = {{ .email | quote }}
+	signingkey = {{ .gpg.signingkey }}
+[gpg]
+	program = gpg
+[commit]
+	gpgSign = true
+[pull]
+	ff = only
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[core]
+	ignorecase = false
+	excludesfile = ~/.gitignore_global
+[tag]
+	forceSignAnnotated = true
+[alias]
+	vacuum = "!f () { git checkout $1; git branch --merged|egrep -v '\\*|develop|main|master'|xargs git branch -d; git fetch --prune; };f"
+[init]
+	defaultBranch = main
+[fetch]
+	prune = true
+[ghq]
+	root = ~/Developer

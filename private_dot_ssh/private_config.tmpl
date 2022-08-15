@@ -1,0 +1,17 @@
+Host {{ .myserver.host }}
+    HostName {{ .myserver.host }}
+    Port     22
+    User     {{ .myserver.user }}
+
+Host myDocker
+    HostName 192.168.64.3
+    Port 22
+    User ubuntu
+    RemoteForward /run/user/1000/gnupg/S.gpg-agent {{ .chezmoi.homeDir }}/.gnupg/S.gpg-agent.extra
+    RemoteForward /run/user/1000/gnupg/S.gpg-agent.ssh {{ .chezmoi.homeDir }}/.gnupg/S.gpg-agent.ssh
+    ForwardAgent yes
+
+
+{{- if stat (joinPath .chezmoi.homeDir ".ssh/conf.d") }}
+Include conf.d/*
+{{- end }}

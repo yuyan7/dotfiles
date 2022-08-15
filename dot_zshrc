@@ -1,0 +1,175 @@
+# 速度計測用
+# zmodload zsh/zprof && zprof
+echo "Welcome to Terminal. ^] show your repositories."
+echo "modify dotfiles. chezmoi cd"
+
+BREW_HOME=$(brew --prefix)
+
+# export
+export LANG=ja_JP.UTF-8
+export KCODE=u
+GOPATH=$HOME/.go
+export PATH=$BREW_HOME/opt/openjdk/bin:$HOME/dotfiles/bin:$BREW_HOME/bin:$BREW_HOME/sbin:$PATH:$GOPATH/bin:$HOME/Library/Android/sdk/platform-tools:$HOME/Package/flutter/bin
+export EDITOR=nvim
+export PAGER=less
+export LSCOLORS=gxfxcxdxbxegexabagacad
+export GOPATH
+export CHROME_EXECUTABLE=/Applications/Sidekick.app/Contents/MacOS/Sidekick
+
+# alias
+alias xcode='open -a xcode'
+alias simulator='open -a Simulator'
+alias f='open ./'
+alias ls='ls -FGh'
+alias ll='ls -alGF'
+alias la='ls -AG'
+alias l='ls -CFG'
+alias tree='tree -NC'
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+alias unmount='sudo diskutil umount "$@"'
+alias pwdc='pwd | tr -d "\n" | pbcopy'
+alias awsp=aws_profile_update
+alias sudo='sudo -E '
+alias asdf_reshim='rm -rf ~/.asdf/shims && asdf reshim '
+
+# PGPでSSH
+gpgconf --launch gpg-agent
+export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+
+bindkey -d
+bindkey -e
+
+autoload -Uz colors && colors
+
+# 補完で小文字でも大文字にマッチさせる
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+
+setopt auto_cd
+setopt auto_pushd
+setopt no_beep
+setopt nolistbeep
+setopt correct
+SPROMPT="correct: $RED%R$DEFAULT -> $GREEN%r$DEFAULT ? [Yes/No/Abort/Edit] => "
+setopt hist_ignore_dups
+setopt hist_ignore_space
+setopt hist_reduce_blanks
+setopt hist_no_store
+setopt hist_expand
+setopt share_history
+setopt print_eight_bit
+setopt nonomatch
+setopt magic_equal_subst
+
+autoload -Uz vcs_info
+setopt prompt_subst
+
+# sudo の後ろでコマンド名を補完する
+zstyle ':completion:*:sudo:*' command-path $BREW_HOME/bin $BREW_HOME/sbin \
+                   /usr/sbin /usr/bin /sbin /bin /usr/X11R6/bin
+
+# ps コマンドのプロセス名補完
+zstyle ':completion:*:processes' command 'ps x -o pid,s,args'
+
+# キャッシュの利用による補完の高速化
+zstyle ':completion::complete:*' use-cache true
+
+zstyle ':completion:*' list-colors "${LS_COLORS}"
+zstyle ':vcs_info:*' enable git svn hg bzr
+zstyle ':vcs_info:*' check-for-changes true
+zstyle ':vcs_info:*' stagedstr "+"
+zstyle ':vcs_info:*' unstagedstr "*"
+zstyle ':vcs_info:*' formats '(%b%c%u)'
+zstyle ':vcs_info:*' actionformats '(%b(%a)%c%u)'
+precmd () {
+    psvar=()
+    LANG=en_US.UTF-8 vcs_info
+    [[ -n "$vcs_info_msg_0_" ]] && psvar[1]="$vcs_info_msg_0_"
+}
+#add-zsh-hook precmd _update_vcs_info_msg
+PROMPT="${SSH_TTY:+"%F{9}%n%f%F{7}@%f%F{3}%m%f "}%F{4}%~%f %1(v|%F{red}%1v%f|) %B%F{1}❯%F{3}❯%F{2}❯%f%b "
+
+# zsh-completionsの設定
+if [ -e $BREW_HOME/share/zsh-completions ]; then
+    fpath=(
+      $BREW_HOME/share/zsh-completions
+      $BREW_HOME/share/zsh/site-functions
+      $fpath
+    )
+    eval "$(gh completion -s zsh)"
+fi
+# 補完機能を有効にする
+autoload -U compinit
+compinit -u
+
+export PATH="$BREW_HOME/sbin:$PATH"
+export PATH="$BREW_HOME/opt/bison/bin:$PATH"
+export PATH="$BREW_HOME/opt/libxml2/bin:$PATH"
+export PATH="$BREW_HOME/opt/bzip2/bin:$PATH"
+export PATH="$BREW_HOME/opt/curl/bin:$PATH"
+export PATH="$BREW_HOME/opt/libiconv/bin:$PATH"
+export PATH="$BREW_HOME/opt/krb5/bin:$PATH"
+export PATH="$BREW_HOME/opt/openssl@1.1/bin:$PATH"
+export PATH="$BREW_HOME/opt/icu4c/bin:$PATH"
+export PKG_CONFIG_PATH="$BREW_HOME/opt/krb5/lib/pkgconfig:$PKG_CONFIG_PATH"
+export PKG_CONFIG_PATH="$BREW_HOME/opt/openssl@1.1/lib/pkgconfig:$PKG_CONFIG_PATH"
+export PKG_CONFIG_PATH="$BREW_HOME/opt/icu4c/lib/pkgconfig:$PKG_CONFIG_PATH"
+export PKG_CONFIG_PATH="$BREW_HOME/opt/libffi/lib/pkgconfig:$PKG_CONFIG_PATH"
+
+source $BREW_HOME/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source $BREW_HOME/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source $BREW_HOME/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc
+
+. $BREW_HOME/opt/asdf/asdf.sh
+
+if [ ~/.zshrc -nt ~/.zshrc.zwc ]; then
+    zcompile ~/.zshrc
+fi
+
+if (which zprof > /dev/null 2>&1) ;then
+  zprof
+fi
+
+
+function git_diff_archive()
+{
+  local diff=""
+  local h="HEAD"
+  if [ $# -eq 1 ]; then
+    if expr "$1" : '[0-9]*$' > /dev/null ; then
+      diff="HEAD~${1} HEAD"
+    else
+      diff="${1} HEAD"
+    fi
+  elif [ $# -eq 2 ]; then
+    diff="${2} ${1}"
+    h=$1
+  fi
+  if [ "$diff" != "" ]; then
+    diff="git diff --diff-filter=d --name-only ${diff}"
+  fi
+  git archive --format=zip $h `eval $diff` -o archive.zip
+}
+
+
+function aws_profile_update() {
+    PROFILES=$(aws configure list-profiles)
+    PROFILES_ARRAY=($(echo $PROFILES))
+    SELECTED_PROFILE=$(echo $PROFILES | peco)
+
+    [[ -n ${PROFILES_ARRAY[(re)${SELECTED_PROFILE}]} ]] && export AWS_PROFILE=${SELECTED_PROFILE}; echo 'Updated profile' || echo ''
+}
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+function peco-src () {
+    local selected_dir=$(ghq list -p | peco --query "$LBUFFER")
+    if [ -n "$selected_dir" ]; then
+	    BUFFER="cd ${selected_dir}"
+	    zle accept-line
+    fi
+    zle clear-screen
+}
+zle -N peco-src
+bindkey '^]' peco-src
