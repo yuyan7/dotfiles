@@ -10,7 +10,7 @@ export LANG=ja_JP.UTF-8
 export KCODE=u
 GOPATH=$HOME/.go
 export PATH=$BREW_HOME/opt/openjdk/bin:$HOME/dotfiles/bin:$BREW_HOME/bin:$BREW_HOME/sbin:$PATH:$GOPATH/bin:$HOME/Library/Android/sdk/platform-tools:$HOME/Package/flutter/bin
-export EDITOR=nvim
+export EDITOR=vi
 export PAGER=less
 export LSCOLORS=gxfxcxdxbxegexabagacad
 export GOPATH
@@ -48,6 +48,10 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
 setopt auto_cd
 setopt auto_pushd
+setopt auto_param_slash
+setopt auto_param_keys
+setopt mark_dirs
+setopt complete_in_word
 setopt no_beep
 setopt nolistbeep
 setopt correct
@@ -173,3 +177,4 @@ function peco-src () {
 }
 zle -N peco-src
 bindkey '^]' peco-src
+
