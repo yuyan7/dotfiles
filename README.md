@@ -38,6 +38,13 @@ Warning: you need setup gpg.
 
 ## GPG
 
+### GPG Key Import
+```
+$ gpg --card-edit
+> fetch
+> quit
+```
+
 ### GPG over SSH to Yubikey
 
 local machine
